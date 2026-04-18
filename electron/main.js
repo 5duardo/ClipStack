@@ -46,7 +46,9 @@ function createWindow() {
     y: Math.floor((sh - winHeight) / 2),
     icon: LOGO_PATH,
     frame: false,
-    resizable: false,
+    resizable: true,
+    minWidth: 400,
+    minHeight: 350,
     skipTaskbar: false,
     alwaysOnTop: true,
     show: isDev, // en dev, visible al inicio para debug
@@ -97,6 +99,12 @@ function showWindow() {
   mainWindow.webContents.send('window:shown');
 }
 
+function openSettingsWindow() {
+  if (!mainWindow) return;
+  showWindow();
+  mainWindow.webContents.send('window:open-settings');
+}
+
 function createTray() {
   let icon = nativeImage.createFromPath(LOGO_PATH);
   if (icon.isEmpty()) {
@@ -114,11 +122,8 @@ function createTray() {
     { label: 'Abrir ClipStack', click: showWindow },
     { type: 'separator' },
     {
-      label: 'Limpiar historial',
-      click: () => {
-        storage.clearAll();
-        if (mainWindow) mainWindow.webContents.send('clips:updated', null);
-      },
+      label: 'Ajustes',
+      click: openSettingsWindow,
     },
     { type: 'separator' },
     { label: 'Salir', click: () => { app.isQuitting = true; app.quit(); } },

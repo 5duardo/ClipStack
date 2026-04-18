@@ -96,6 +96,14 @@ export default function App() {
     return () => unsub && unsub();
   }, []);
 
+  useEffect(() => {
+    if (!window.clipstack?.onOpenSettings) return;
+    const unsub = window.clipstack.onOpenSettings(() => {
+      setView('settings');
+    });
+    return () => unsub && unsub();
+  }, []);
+
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') {
       e.preventDefault();

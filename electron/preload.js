@@ -27,4 +27,9 @@ contextBridge.exposeInMainWorld('clipstack', {
     ipcRenderer.on('window:shown', listener);
     return () => ipcRenderer.removeListener('window:shown', listener);
   },
+  onOpenSettings: (cb) => {
+    const listener = () => cb();
+    ipcRenderer.on('window:open-settings', listener);
+    return () => ipcRenderer.removeListener('window:open-settings', listener);
+  },
 });
