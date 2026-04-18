@@ -129,7 +129,7 @@ export default function App() {
   });
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-white dark:bg-neutral-900/95 backdrop-blur-xl rounded-xl overflow-hidden border border-neutral-200 dark:border-white/10 shadow-2xl">
+    <div className="h-screen w-screen flex flex-col bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-2xl">
       <TitleBar
         view={view}
         onOpenSettings={() => setView('settings')}
@@ -194,7 +194,7 @@ export default function App() {
             )}
           </div>
 
-          <div className="flex items-center justify-center px-4 py-2 border-t border-neutral-200 dark:border-white/10 text-[11px] text-neutral-500 dark:text-white/40 bg-neutral-50 dark:bg-black/20">
+          <div className="flex items-center justify-center px-4 py-2 border-t border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-500 dark:text-white/40 bg-neutral-50 dark:bg-neutral-950">
             <div className="flex items-center gap-3">
               <span><kbd className="text-neutral-700 dark:text-white/60">↑↓</kbd> {t('footer.navigate', settings.language)}</span>
               <span><kbd className="text-neutral-700 dark:text-white/60">⮐</kbd> {t('footer.copy', settings.language)}</span>

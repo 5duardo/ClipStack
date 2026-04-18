@@ -39,8 +39,8 @@ function createWindow() {
     skipTaskbar: false,
     alwaysOnTop: true,
     show: isDev, // en dev, visible al inicio para debug
-    transparent: !isDev,
-    backgroundColor: isDev ? '#171717' : '#00000000',
+    transparent: false,
+    backgroundColor: '#171717',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

@@ -8,8 +8,8 @@ files:
   - package.json
 win:
   target: nsis
-  icon: assets/icon.ico
+  icon: src/assets/logo.png
 mac:
   target: dmg
-  icon: assets/icon.icns
+  icon: src/assets/logo.png
   category: public.app-category.productivity
