@@ -4,7 +4,7 @@ import { t } from '../i18n/translations.js';
 export default function TitleBar({ onOpenSettings, onShowHome, view, language = 'es' }) {
   return (
     <div
-      className="flex items-center justify-between h-9 px-3 border-b border-neutral-200 dark:border-white/10 bg-white/60 dark:bg-black/20"
+      className="flex items-center justify-between h-9 px-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
       style={{ WebkitAppRegion: 'drag' }}
     >
       <div className="flex items-center gap-2 text-xs font-medium text-neutral-600 dark:text-white/60">

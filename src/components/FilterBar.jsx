@@ -41,7 +41,7 @@ export default function FilterBar({ typeFilter, dateFilter, onTypeChange, onDate
   const currentDate = DATE_OPTIONS(language).find(o => o.value === dateFilter) || DATE_OPTIONS(language)[0];
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-black/20">
+    <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
       <span className="text-xs text-neutral-500 dark:text-white/40">{t('filters.title', language)}</span>
 
       {/* Tipo */}

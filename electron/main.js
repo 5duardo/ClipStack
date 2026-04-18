@@ -7,7 +7,18 @@ const shortcuts = require('./shortcuts');
 const settings = require('./settings');
 
 const isDev = process.env.NODE_ENV === 'development';
-const LOGO_PATH = path.join(__dirname, '..', 'src', 'assets', 'logo.ico');
+
+function resolveIconPath() {
+  const candidates = [
+    path.join(__dirname, '..', 'src', 'assets', 'logo.ico'),
+    path.join(process.resourcesPath || '', 'app.asar', 'src', 'assets', 'logo.ico'),
+    path.join(process.resourcesPath || '', 'app', 'src', 'assets', 'logo.ico'),
+  ];
+
+  return candidates.find((p) => p && fs.existsSync(p)) || candidates[0];
+}
+
+const LOGO_PATH = resolveIconPath();
 
 let mainWindow = null;
 let tray = null;
@@ -87,7 +98,10 @@ function showWindow() {
 }
 
 function createTray() {
-  const icon = nativeImage.createFromPath(LOGO_PATH);
+  let icon = nativeImage.createFromPath(LOGO_PATH);
+  if (icon.isEmpty()) {
+    icon = nativeImage.createFromNamedImage('application-icon');
+  }
   try {
     tray = new Tray(icon);
   } catch (e) {
