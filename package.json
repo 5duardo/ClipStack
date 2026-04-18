@@ -1,7 +1,7 @@
 {
   "name": "clipstack",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Clipboard manager para Windows y macOS",
   "main": "electron/main.js",
   "author": "ClipStack",
