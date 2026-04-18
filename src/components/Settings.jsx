@@ -42,6 +42,9 @@ export default function Settings({ settings, onChange }) {
   const [capturing, setCapturing] = useState(false);
   const [hotkeyPreview, setHotkeyPreview] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [appVersion, setAppVersion] = useState('');
+  const [updateStatus, setUpdateStatus] = useState(null); // 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+  const [updateData, setUpdateData] = useState(null);
   const inputRef = useRef(null);
 
   // Asegurar que language siempre tenga un valor
@@ -56,6 +59,31 @@ export default function Settings({ settings, onChange }) {
     document.title = t('settings.title', language) + ' - ClipStack';
     return () => { document.title = 'ClipStack'; };
   }, [language]);
+
+  useEffect(() => {
+    if (window.clipstack?.getAppVersion) {
+      window.clipstack
+        .getAppVersion()
+        .then((v) => setAppVersion(v || '0.1.0'))
+        .catch(() => setAppVersion('0.1.0'));
+    } else {
+      setAppVersion('0.1.0');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!window.clipstack?.onUpdateStatus) return;
+    const unsub = window.clipstack.onUpdateStatus(({ status, data }) => {
+      setUpdateStatus(status);
+      setUpdateData(data);
+    });
+    return () => unsub && unsub();
+  }, []);
+
+  const handleCheckUpdates = () => {
+    setUpdateStatus('checking');
+    window.clipstack?.checkForUpdates?.();
+  };
 
   useEffect(() => {
     if (!capturing) return;
@@ -282,8 +310,86 @@ export default function Settings({ settings, onChange }) {
         <h2 className="text-sm uppercase tracking-wider text-neutral-500 dark:text-white/40 font-semibold mb-4">
           {t('settings.about', language)}
         </h2>
-        <div className="p-4 rounded-lg bg-neutral-100 dark:bg-white/5 text-xs text-neutral-600 dark:text-white/60 space-y-2">
-          <div>{t('settings.version', language)}</div>
+        <div className="p-4 rounded-lg bg-neutral-100 dark:bg-white/5 text-xs text-neutral-600 dark:text-white/60 space-y-3">
+          <div className="flex items-center justify-between">
+            <span>{t('settings.version', language)}</span>
+            <span className="font-mono font-medium text-neutral-800 dark:text-white/80">{appVersion || (language === 'es' ? 'Cargando...' : 'Loading...')}</span>
+          </div>
+
+          {/* Botón buscar actualizaciones */}
+          <div className="pt-2 border-t border-neutral-200 dark:border-white/10">
+            <button
+              onClick={handleCheckUpdates}
+              disabled={updateStatus === 'checking' || updateStatus === 'downloading'}
+              className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                updateStatus === 'available' || updateStatus === 'downloaded'
+                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  : updateStatus === 'error'
+                  ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-500/30'
+                  : 'bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-white/80 border border-neutral-300 dark:border-white/10'
+              } disabled:opacity-60 disabled:cursor-not-allowed`}
+            >
+              {updateStatus === 'checking' && (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {language === 'es' ? 'Buscando...' : 'Checking...'}
+                </>
+              )}
+              {updateStatus === 'downloading' && (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {language === 'es' ? `Descargando ${updateData?.percent || 0}%...` : `Downloading ${updateData?.percent || 0}%...`}
+                </>
+              )}
+              {updateStatus === 'available' && (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  {language === 'es' ? `v${updateData?.version} disponible - Descargando...` : `v${updateData?.version} available - Downloading...`}
+                </>
+              )}
+              {updateStatus === 'downloaded' && (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {language === 'es' ? `v${updateData?.version} lista - Reinicia para instalar` : `v${updateData?.version} ready - Restart to install`}
+                </>
+              )}
+              {updateStatus === 'not-available' && (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {language === 'es' ? 'Estás en la última versión' : 'You\'re up to date'}
+                </>
+              )}
+              {updateStatus === 'error' && (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {language === 'es' ? 'Error al buscar actualización' : 'Error checking for updates'}
+                </>
+              )}
+              {!updateStatus && (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {language === 'es' ? 'Buscar actualización' : 'Check for updates'}
+                </>
+              )}
+            </button>
+          </div>
+
           <div>{t('settings.description', language)}</div>
           <div className="pt-2 border-t border-neutral-200 dark:border-white/10">
             <div className="font-medium text-neutral-700 dark:text-white/80 flex items-center gap-2">

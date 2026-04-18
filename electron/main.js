@@ -7,6 +7,9 @@ const clipboardWatcher = require('./clipboard');
 const shortcuts = require('./shortcuts');
 const settings = require('./settings');
 
+// Expose app version via IPC for renderer
+ipcMain.handle('app:version', () => app.getVersion());
+
 const isDev = process.env.NODE_ENV === 'development';
 
 function resolveIconPath() {
@@ -24,6 +27,12 @@ const LOGO_PATH = resolveIconPath();
 let mainWindow = null;
 let tray = null;
 
+function sendUpdateStatus(status, data = null) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('updater:status', { status, data });
+  }
+}
+
 function initAutoUpdater() {
   if (isDev) return;
 
@@ -32,22 +41,26 @@ function initAutoUpdater() {
 
   autoUpdater.on('error', (e) => {
     console.error('Auto-update error:', e);
+    sendUpdateStatus('error', e?.message || 'Unknown error');
   });
 
   autoUpdater.on('update-available', (info) => {
     console.log('Update available:', info?.version || 'unknown');
+    sendUpdateStatus('available', { version: info?.version });
   });
 
   autoUpdater.on('update-not-available', () => {
     console.log('No updates available');
+    sendUpdateStatus('not-available');
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    sendUpdateStatus('downloading', { percent: Math.round(progress.percent) });
   });
 
   autoUpdater.on('update-downloaded', (info) => {
     console.log('Update downloaded:', info?.version || 'unknown');
-    if (!app.isQuitting) {
-      app.isQuitting = true;
-      autoUpdater.quitAndInstall(false, true);
-    }
+    sendUpdateStatus('downloaded', { version: info?.version });
   });
 
   autoUpdater.checkForUpdatesAndNotify().catch((e) => {
@@ -236,6 +249,21 @@ function registerIpc() {
   });
   ipcMain.handle('window:close', () => { app.isQuitting = true; app.quit(); });
   ipcMain.handle('window:minimize', () => { if (mainWindow) mainWindow.hide(); });
+
+  ipcMain.handle('updater:check', async () => {
+    if (isDev) {
+      sendUpdateStatus('not-available');
+      return { available: false };
+    }
+    try {
+      sendUpdateStatus('checking');
+      const result = await autoUpdater.checkForUpdates();
+      return { available: !!result?.downloadPromise, version: result?.updateInfo?.version };
+    } catch (e) {
+      sendUpdateStatus('error', e?.message || 'Check failed');
+      return { available: false, error: e?.message };
+    }
+  });
 }
 
 app.whenReady().then(() => {

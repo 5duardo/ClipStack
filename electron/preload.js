@@ -33,4 +33,11 @@ contextBridge.exposeInMainWorld('clipstack', {
     ipcRenderer.on('window:open-settings', listener);
     return () => ipcRenderer.removeListener('window:open-settings', listener);
   },
+  getAppVersion: () => ipcRenderer.invoke('app:version'),
+  checkForUpdates: () => ipcRenderer.invoke('updater:check'),
+  onUpdateStatus: (cb) => {
+    const listener = (_e, payload) => cb(payload);
+    ipcRenderer.on('updater:status', listener);
+    return () => ipcRenderer.removeListener('updater:status', listener);
+  },
 });
