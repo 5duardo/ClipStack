@@ -1,6 +1,7 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
 const storage = require('./storage');
 const clipboardWatcher = require('./clipboard');
 const shortcuts = require('./shortcuts');
@@ -22,6 +23,37 @@ const LOGO_PATH = resolveIconPath();
 
 let mainWindow = null;
 let tray = null;
+
+function initAutoUpdater() {
+  if (isDev) return;
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('error', (e) => {
+    console.error('Auto-update error:', e);
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available:', info?.version || 'unknown');
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    console.log('No updates available');
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded:', info?.version || 'unknown');
+    if (!app.isQuitting) {
+      app.isQuitting = true;
+      autoUpdater.quitAndInstall(false, true);
+    }
+  });
+
+  autoUpdater.checkForUpdatesAndNotify().catch((e) => {
+    console.error('Error checking updates:', e);
+  });
+}
 
 function applyLaunchOnStartup(enabled) {
   try {
@@ -59,6 +91,31 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        shell.openExternal(parsed.toString());
+      }
+    } catch {
+      // ignore invalid urls
+    }
+    return { action: 'deny' };
+  });
+
+  mainWindow.webContents.on('will-navigate', (e, url) => {
+    if (!url) return;
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        e.preventDefault();
+        shell.openExternal(parsed.toString());
+      }
+    } catch {
+      // ignore invalid urls
+    }
   });
 
   if (isDev) {
@@ -153,6 +210,17 @@ function registerIpc() {
   ipcMain.handle('clips:clearAll', () => { storage.clearAll(); return true; });
   ipcMain.handle('window:hide', () => { if (mainWindow) mainWindow.hide(); });
   ipcMain.handle('clips:imageDataURL', (_e, filepath) => storage.getImageAsDataURL(filepath));
+  ipcMain.handle('external:open', async (_e, url) => {
+    if (!url || typeof url !== 'string') return false;
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+      await shell.openExternal(parsed.toString());
+      return true;
+    } catch {
+      return false;
+    }
+  });
 
   ipcMain.handle('settings:get', () => settings.read());
   ipcMain.handle('settings:set', (_e, partial) => {
@@ -185,6 +253,7 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
   registerIpc();
+  initAutoUpdater();
   const s = settings.read();
   applyLaunchOnStartup(s.launchOnStartup);
   shortcuts.register(s.hotkey, toggleWindow);

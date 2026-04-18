@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('clipstack', {
   hideWindow: () => ipcRenderer.invoke('window:hide'),
   minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
   closeApp: () => ipcRenderer.invoke('window:close'),
+  openExternal: (url) => ipcRenderer.invoke('external:open', url),
   getImageDataURL: (filepath) => ipcRenderer.invoke('clips:imageDataURL', filepath),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (partial) => ipcRenderer.invoke('settings:set', partial),

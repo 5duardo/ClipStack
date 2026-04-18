@@ -15,15 +15,36 @@ function formatTime(iso) {
   }
 }
 
+function getClipUrl(clip) {
+  if (!clip || clip.type !== 'text' || !clip.content) return null;
+  const content = clip.content.trim();
+  try {
+    const parsed = new URL(content);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString();
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export default function ClipItem({ clip, selected, onClick, onTogglePin, onRemove, language = 'es' }) {
   const [imgSrc, setImgSrc] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const clipUrl = getClipUrl(clip);
 
   const handleCopyFromModal = () => {
     if (window.clipstack) {
       window.clipstack.copyClip(clip.id);
     }
     setShowViewModal(false);
+  };
+
+  const handleOpenExternal = (e) => {
+    e.stopPropagation();
+    if (!clipUrl || !window.clipstack?.openExternal) return;
+    window.clipstack.openExternal(clipUrl);
   };
 
   useEffect(() => {
@@ -72,7 +93,19 @@ export default function ClipItem({ clip, selected, onClick, onTogglePin, onRemov
         <div className="text-xs text-neutral-400 dark:text-white/30 mt-0.5">{formatTime(clip.created_at)}</div>
       </div>
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 opacity-100">
+        {clipUrl && (
+          <button
+            onClick={handleOpenExternal}
+            className="p-1.5 rounded hover:bg-neutral-200 dark:hover:bg-white/10 text-neutral-400 dark:text-white/40 hover:text-indigo-500 dark:hover:text-indigo-400"
+            title={language === 'es' ? 'Abrir enlace en navegador' : 'Open link in browser'}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H19m0 0v5.5M19 6l-7.5 7.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 8H7.75A1.75 1.75 0 006 9.75v6.5C6 17.216 6.784 18 7.75 18h6.5A1.75 1.75 0 0016 16.25V14" />
+            </svg>
+          </button>
+        )}
         <button
           onClick={(e) => { e.stopPropagation(); setShowViewModal(true); }}
           className="p-1.5 rounded hover:bg-neutral-200 dark:hover:bg-white/10 text-neutral-400 dark:text-white/40 hover:text-indigo-500 dark:hover:text-indigo-400"
@@ -130,6 +163,18 @@ export default function ClipItem({ clip, selected, onClick, onTogglePin, onRemov
                   <div className="text-xs text-neutral-500 dark:text-white/40">
                     · {clip.content.length} {t('clip.characters', language)}
                   </div>
+                )}
+                {clipUrl && (
+                  <button
+                    onClick={handleOpenExternal}
+                    className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-500 dark:text-white/60 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+                    title={language === 'es' ? 'Abrir enlace en navegador' : 'Open link in browser'}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H19m0 0v5.5M19 6l-7.5 7.5" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 8H7.75A1.75 1.75 0 006 9.75v6.5C6 17.216 6.784 18 7.75 18h6.5A1.75 1.75 0 0016 16.25V14" />
+                    </svg>
+                  </button>
                 )}
               </div>
               <button

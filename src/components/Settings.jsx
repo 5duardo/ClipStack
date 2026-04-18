@@ -94,6 +94,15 @@ export default function Settings({ settings, onChange }) {
     onChange({ hotkey: def });
   };
 
+  const handleOpenHypedCenter = (e) => {
+    e.preventDefault();
+    if (window.clipstack?.openExternal) {
+      window.clipstack.openExternal('https://hyped.center');
+      return;
+    }
+    window.open('https://hyped.center', '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-8 space-y-8 text-neutral-800 dark:text-white/90">
       <section>
@@ -277,16 +286,25 @@ export default function Settings({ settings, onChange }) {
           <div>{t('settings.version', language)}</div>
           <div>{t('settings.description', language)}</div>
           <div className="pt-2 border-t border-neutral-200 dark:border-white/10">
-            <div className="font-medium text-neutral-700 dark:text-white/80">
+            <div className="font-medium text-neutral-700 dark:text-white/80 flex items-center gap-2">
               {t('settings.createdBy', language)}{' '}
               <a
                 href="https://hyped.center"
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={handleOpenHypedCenter}
                 className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline transition-colors"
               >
                 HYPED CENTER
               </a>
+              <button
+                onClick={handleOpenHypedCenter}
+                className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-white/10 text-neutral-500 dark:text-white/50 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+                title={language === 'es' ? 'Abrir enlace en navegador' : 'Open link in browser'}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H19m0 0v5.5M19 6l-7.5 7.5" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 8H7.75A1.75 1.75 0 006 9.75v6.5C6 17.216 6.784 18 7.75 18h6.5A1.75 1.75 0 0016 16.25V14" />
+                </svg>
+              </button>
             </div>
           </div>
           <div>{t('settings.license', language)}</div>

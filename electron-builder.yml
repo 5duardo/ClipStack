@@ -14,3 +14,7 @@ mac:
   target: dmg
   icon: src/assets/logo.png
   category: public.app-category.productivity
+publish:
+  provider: github
+  owner: 5duardo
+  repo: ClipStack
