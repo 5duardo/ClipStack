@@ -7,7 +7,7 @@ const shortcuts = require('./shortcuts');
 const settings = require('./settings');
 
 const isDev = process.env.NODE_ENV === 'development';
-const LOGO_PATH = path.join(__dirname, '..', 'src', 'assets', 'logo.png');
+const LOGO_PATH = path.join(__dirname, '..', 'src', 'assets', 'logo.ico');
 
 let mainWindow = null;
 let tray = null;

@@ -8,7 +8,7 @@ files:
   - package.json
 win:
   target: nsis
-  icon: src/assets/logo.png
+  icon: src/assets/logo.ico
 mac:
   target: dmg
   icon: src/assets/logo.png
