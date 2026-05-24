@@ -235,6 +235,21 @@ function registerIpc() {
     }
   });
 
+  ipcMain.handle('clips:showInFolder', (_e, id) => {
+    const clips = storage.readAll();
+    const clip = clips.find((c) => c.id === id);
+    if (!clip) return false;
+    if (clip.type === 'image' && clip.content && fs.existsSync(clip.content)) {
+      shell.showItemInFolder(clip.content);
+    } else {
+      // Para clips de texto, mostrar el archivo clips.json
+      const dataDir = path.join(app.getPath('userData'), 'data');
+      const clipsFile = path.join(dataDir, 'clips.json');
+      shell.showItemInFolder(clipsFile);
+    }
+    return true;
+  });
+
   ipcMain.handle('settings:get', () => settings.read());
   ipcMain.handle('settings:set', (_e, partial) => {
     const next = settings.write(partial);

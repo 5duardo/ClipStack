@@ -40,7 +40,7 @@ export const translations = {
     'settings.cancel': 'Cancelar',
     'settings.clear': 'Limpiar',
     'settings.about': 'Acerca de',
-    'settings.version': 'ClipStack v0.1.0',
+    'settings.version': 'ClipStack v0.1.3',
     'settings.description': 'Clipboard manager local · Sin nube · Sin cuentas',
     'settings.createdBy': 'Creado por:',
     'settings.license': 'Licencia MIT',
@@ -72,6 +72,7 @@ export const translations = {
     'clip.close': 'Cerrar',
     'clip.copyContent': 'Copiar',
     'clip.characters': 'caracteres',
+    'clip.showInFolder': 'Ver ubicación del archivo',
     
     // Pinned section
     'pinned.title': 'Anclados',
@@ -117,7 +118,7 @@ export const translations = {
     'settings.cancel': 'Cancel',
     'settings.clear': 'Clear',
     'settings.about': 'About',
-    'settings.version': 'ClipStack v0.1.0',
+    'settings.version': 'ClipStack v0.1.3',
     'settings.description': 'Local clipboard manager · No cloud · No accounts',
     'settings.createdBy': 'Created by:',
     'settings.license': 'MIT License',
@@ -149,6 +150,7 @@ export const translations = {
     'clip.close': 'Close',
     'clip.copyContent': 'Copy',
     'clip.characters': 'characters',
+    'clip.showInFolder': 'Show file location',
     
     // Pinned section
     'pinned.title': 'Pinned',
